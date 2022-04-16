@@ -1,11 +1,15 @@
 package com.spring.project.todoapp.todoapp.todolist;
 
+import com.spring.project.todoapp.todoapp.error.ConflictException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
+
+import com.spring.project.todoapp.todoapp.error.NotFoundException;
 
 @Service
 public class TodoService {
@@ -27,12 +31,17 @@ public class TodoService {
     }
 
     public Todo getById(String id) {
-
+        try{
            return todoRepository.findById(id).get();
-        
+        }catch(NoSuchElementException ex){
+            throw new NotFoundException(String.format("This id :{ %s} is not found in your Database", id));
+        }
     }
 
     public Todo save(@Valid Todo todo){
+        if(todoRepository.findByTitle(todo.getTitle()) != null){
+            throw new ConflictException("Anther record with same title exists");
+        }
         return todoRepository.insert(todo);
     }
 
